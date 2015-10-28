@@ -1,4 +1,4 @@
-/* The implementation of the 500mS timer is correct */
+/* Bug fixed: When pressed both buttons it would change the movement. */
 
 #include "MPC5606B.h"
 #include "IntcInterrupts.h"
@@ -219,10 +219,10 @@ void initGPIO(void){
 					while(!STM.CH[1].CIR.B.CIF);
 					STM.CH[1].CIR.B.CIF = 0x01;
 					
-					if(SIU.GPDI[65].B.PDI){
+					if(GPDI_value == 65 && SIU.GPDI[65].B.PDI){
 						j--;
 						direction = 0x00;
-					}else if(SIU.GPDI[64].B.PDI){
+					}else if(GPDI_value == 64 && SIU.GPDI[64].B.PDI){
 						j++;
 						direction = 0x01;
 					}
