@@ -1,5 +1,4 @@
-//Version 1.0 setWindowLevel y setGPIO
-
+/*STM implementation */
 
 #include "MPC5606B.h"
 #include "IntcInterrupts.h"
@@ -82,8 +81,8 @@ void initModesAndClock2(void) {
 }
 
 void initSTM(void){
-	INTC_InstallINTCInterruptHandler(isr,30,1);
-	INTC_InstallINTCInterruptHandler(isr,31,1);
+	//INTC_InstallINTCInterruptHandler(isr,30,1);
+	//INTC_InstallINTCInterruptHandler(isr,31,1);
 	INTC_InstallINTCInterruptHandler(isr,32,1);
 	INTC.CPR.R = 0;
 	
@@ -134,6 +133,11 @@ void initGPIO(void){
 	SIU.PCR[66].R = INPUT;
 	SIU.PCR[67].R = INPUT;
 	
+	SIU.PCR[68].R = OUTPUT;				/* Program the drive enable pin of LED1 (PE4) as output*/
+	//SIU.PCR[69].R = 0x0200;				/* Program the drive enable pin of LED2 (PE5) as output*/
+	//SIU.PCR[70].R = 0x0200;				/* Program the drive enable pin of LED3 (PE6) as output*/
+	//SIU.PCR[71].R = 0x0200;				/* Program the drive enable pin of LED4 (PE7) as output*/
+	
 }
 void main (void) {
 	
@@ -141,50 +145,40 @@ void main (void) {
 	
 	initSTM();
 	//initPIT();
-
-	SIU.PCR[68].R = 0x0200;				/* Program the drive enable pin of LED1 (PE4) as output*/
-	//SIU.PCR[69].R = 0x0200;				/* Program the drive enable pin of LED2 (PE5) as output*/
-	//SIU.PCR[70].R = 0x0200;				/* Program the drive enable pin of LED3 (PE6) as output*/
-	//SIU.PCR[71].R = 0x0200;				/* Program the drive enable pin of LED4 (PE7) as output*/
 	
 	initGPIO();
-	
-	//ADC_0.MCR.B.PWDN = 0;
-	
+		
 	STM.CNT.R = 0;
-
-	STM.CR.B.TEN = 0x01;
-	STM.CR.B.FRZ = 0x00;
-	STM.CR.B.CPS = 0x00;
-
-	STM.CH[0].CCR.B.CEN = 0x01;
-	STM.CH[0].CMP.R = 320000000;
-
-	
-	
-	
-	
-	STM.CNT.R = 0;
-
-
-	
+	j = 0;
+	setWindowLevel(j);
 	while (1) 
 	{
-		//while(SIU.GPDI[64].B.PDI);
+
+		while(!SIU.GPDI[64].B.PDI && !SIU.GPDI[65].B.PDI);
+		STM.CNT.R = 0;
+		while(!STM.CH[0].CIR.B.CIF);
+		STM.CH[0].CIR.B.CIF = 0x01;
+		
+		if(SIU.GPDI[64].B.PDI)
+			j++;
+		else if(SIU.GPDI[65].B.PDI){
+			j--;
+		}
+		if(j == 11)
+			j = 10;
+		if(j == -1)
+			j = 0;
+		setWindowLevel(j);
+		
+		while(!STM.CH[1].CIR.B.CIF);
+		STM.CH[1].CIR.B.CIF = 0x01;
 		//SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
 		
-		for(j = 0; j<=10; j++){
+		/*for(j = 0; j<=10; j++){
 			setWindowLevel(j);
 			for(a = 0; a<1000000; a++);
-		}
-		/*myvar = SIU.GPDI[64].B.PDI;
-		if( myvar ){
-			SIU.GPDO[68].B.PDO = 0;
-		}
-		else{
-			SIU.GPDO[68].B.PDO = 1;
-		}
-*/
+		}*/
+		
 		
 	} /* end while(1) */
 }/* end main */
