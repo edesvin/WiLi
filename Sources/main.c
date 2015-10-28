@@ -1,4 +1,4 @@
-/* Automatic cycle. the implementation of the 500mS timer is not right */
+/* The implementation of the 500mS timer is correct */
 
 #include "MPC5606B.h"
 #include "IntcInterrupts.h"
@@ -122,7 +122,7 @@ void initGPIO(void){
 	SIU.PCR[66].R = INPUT;
 	SIU.PCR[67].R = INPUT;
 	
-	SIU.PCR[68].R = OUTPUT;				/* Program the drive enable pin of LED1 (PE4) as output*/
+	//SIU.PCR[68].R = OUTPUT;				/* Program the drive enable pin of LED1 (PE4) as output*/
 	//SIU.PCR[69].R = 0x0200;				/* Program the drive enable pin of LED2 (PE5) as output*/
 	//SIU.PCR[70].R = 0x0200;				/* Program the drive enable pin of LED3 (PE6) as output*/
 	//SIU.PCR[71].R = 0x0200;				/* Program the drive enable pin of LED4 (PE7) as output*/
@@ -188,12 +188,15 @@ void initGPIO(void){
 					
 				setWindowLevel(j);
 				
-				if(!first_time && flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI)
-					break_flag = 0;
+
 				
 				RESET_STM_COUNTER;
 				
-				while(!STM.CH[1].CIR.B.CIF);
+				while(!STM.CH[1].CIR.B.CIF && !(!first_time && flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI) );
+			
+				if(!first_time && flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI)
+					break;
+				
 				STM.CH[1].CIR.B.CIF = 0x01;
 		
 				if(first_time){
@@ -201,6 +204,9 @@ void initGPIO(void){
 					RESET_STM_COUNTER;
 					STM.CH[2].CCR.B.CEN = 0x01;
 					first_time = 0;
+				}else if(!SIU.GPDI[GPDI_value].B.PDI){
+					STM.CH[2].CCR.B.CEN = 0x00;
+					flag_FiveH_ms = 0;
 				}
 					
 				//if(flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI)
@@ -209,6 +215,10 @@ void initGPIO(void){
 			
 			if(flag_FiveH_ms){
 				while(SIU.GPDI[GPDI_value].B.PDI){
+					RESET_STM_COUNTER;
+					while(!STM.CH[1].CIR.B.CIF);
+					STM.CH[1].CIR.B.CIF = 0x01;
+					
 					if(SIU.GPDI[65].B.PDI){
 						j--;
 						direction = 0x00;
@@ -230,10 +240,7 @@ void initGPIO(void){
 					}
 						
 					setWindowLevel(j);
-					
-					RESET_STM_COUNTER;
-					while(!STM.CH[1].CIR.B.CIF);
-					STM.CH[1].CIR.B.CIF = 0x01;
+				
 				}
 			}
 			
