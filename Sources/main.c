@@ -1,47 +1,55 @@
-/*LED UP and DOWN implementation */
+/* Automatic cycle. the implementation of the 500mS timer is not right */
 
 #include "MPC5606B.h"
 #include "IntcInterrupts.h"
 
 #define ValTMR 		0X61A7FF
 
-#define Ten_ms 		0x0000FA00
-#define FourH_ms	0x0186A000
-#define FiveH_ms 	0x01E84800
+#define Ten_ms 		0x0000FA01
+#define FourH_ms	0x0186A001
+#define FiveH_ms 	0x0061A801
+
 #define OUTPUT 		0x0200
 #define INPUT 		0x0100
 #define LED_DOWN	SIU.GPDO[10].B.PDO
 #define LED_UP	 	SIU.GPDO[11].B.PDO
 #define RGB_ON		0x00
 #define RGB_OFF		0x01
+#define _OK			0x01
+#define RESET_STM_COUNTER STM.CNT.R = 0
 
+volatile unsigned int flag_Ten_ms = 0;
+volatile unsigned int flag_FourH_ms = 0;
+volatile unsigned int flag_FiveH_ms = 0;
 
-int dly,lly;
-
-volatile unsigned int flag_STM0 = 0;
-volatile unsigned int flag_STM1 = 0;
-volatile unsigned int flag_STM2 = 0;
-unsigned int myvar = 0;
-unsigned int i = 0;
+unsigned int myvar = 0, Ten_ms_passed = 0;
+unsigned int i = 0, break_flag = 0;
 int j = 0;
-unsigned int a = 0;
-unsigned int direction = 0;
+unsigned int a = 0, GPDI_value = 0, Automatic = 0;
+unsigned int direction = 0, first_time = 0;
+unsigned long int MyTimer = 0;
+
 /* main.c - eMIOS OPWM example */
 /* Description:  eMIOS example using Modulus Counter and OPWM modes */
 /* Rev 1.8 Mar 14 2010 SM - modified initModesAndClock, updated header file */
 /* Copyright Freescale Semiconductor, Inc. 2004–2010 All rights reserved. */
 
+void reset_flags(void){
+	flag_Ten_ms = 0;
+	flag_FourH_ms = 0;
+	flag_FiveH_ms = 0;
+}
 void isr(void){
 	if(STM.CH[0].CIR.B.CIF){ 
-		flag_STM0 = 1;
+		flag_Ten_ms = 1;
 		STM.CH[0].CIR.B.CIF = 0x01;
 	}
 	if(STM.CH[1].CIR.B.CIF){ 
-		flag_STM1 = 1;
+		flag_FourH_ms = 1;
 		STM.CH[1].CIR.B.CIF = 0x01;
 	}
 	if(STM.CH[2].CIR.B.CIF){ 
-		flag_STM2 = 1;
+		flag_FiveH_ms = 1;
 		STM.CH[2].CIR.B.CIF = 0x01;
 	}
 }
@@ -51,13 +59,8 @@ void initModesAndClock(void) {
 	                              		/* Initialize PLL before turning it on: */
 										/* Use 1 of the next 2 lines depending on crystal frequency: */
 	CGM.FMPLL_CR.R = 0x02400100;    	/* 8 MHz xtal: Set PLL0 to 64 MHz */   
-	/*CGM.FMPLL_R = 0x12400100;*/     	/* 40 MHz xtal: Set PLL0 to 64 MHz */   
-	ME.RUN[0].R = 0x001F0074;       	/* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL */
 	
-	//ME.RUNPC[0].R = 0x00000010; 	  	/* Peri. Cfg. 0 settings: only run in RUN0 mode */
-   										/* Use the next lines as needed for MPC56xxB/S: */  	    	
-	//ME.PCTL[48].R = 0x0000;         	/* MPC56xxB LINFlex0: select ME.RUNPC[0] */	
-	//ME.PCTL[68].R = 0x0000;         	/* MPC56xxB/S SIUL:  select ME.RUNPC[0] */	
+	ME.RUN[0].R = 0x001F0074;       	/* RUN0 cfg: 16MHzIRCON,OSC0ON,PLL0ON,syclk=PLL */
 	
 	ME.RUNPC[1].R = 0x00000010;     	/* Peri. Cfg. 1 settings: only run in RUN0 mode */
 	ME.PCTL[32].R = 0x01;       		/* MPC56xxB ADC 0: select ME.RUNPC[1] */
@@ -71,24 +74,10 @@ void initModesAndClock(void) {
 	while (ME.GS.B.S_MTRANS) {}     	/* Wait for mode transition to complete */    
 	                          			/* Note: could wait here using timer and/or I_TC IRQ */
 	while(ME.GS.B.S_CURRENTMODE != 4) {}/* Verify RUN0 is the current mode */
-	
-	//while (ME.IS.B.I_MTC != 1) {}    /* Wait for mode transition to complete */    
-	//ME.IS.R = 0x00000001;           /* Clear Transition flag */ 
-}
-void initModesAndClock2(void) {
-
-	ME.MER.R = 0x000025FF;
-	CGM.FMPLL_CR.R = 0x02400100;
-	/* ME_PCTL[all periph] default points to ME_RUN_PC[0] */
-	ME.RUNPC[0].R = 0x000000FE; /* Peripheral ON in every mode */
-	/* Re-enter mode to latch mode settings */
-	ME.MCTL.R = 0x30005AF0; /* Mode & Key */
-	ME.MCTL.R = 0x3000A50F; /* Mode & Key inverted */	
-
 }
 
 void initSTM(void){
-	//INTC_InstallINTCInterruptHandler(isr,30,1);
+	INTC_InstallINTCInterruptHandler(isr,30,1);
 	//INTC_InstallINTCInterruptHandler(isr,31,1);
 	INTC_InstallINTCInterruptHandler(isr,32,1);
 	INTC.CPR.R = 0;
@@ -105,17 +94,8 @@ void initSTM(void){
 	STM.CH[1].CMP.R = FourH_ms; //Compare register 
 	/* STM.CH[1].CIR.B.CIF - Interrupt flag */
 	
-	STM.CH[2].CCR.B.CEN = 0x01; //Enable channel 2
+	STM.CH[2].CCR.B.CEN = 0x00; //Enable channel 2
 	STM.CH[2].CMP.R = FiveH_ms; //Compare register 
-}
-
-void initPIT(void){
-	PIT.PITMCR.B.MDIS = 0x00; /* enable PIT module */
-	PIT.PITMCR.B.FRZ = 0x00;
-	
-	PIT.CH[2].LDVAL.R = ValTMR; /* load PIT counter */
-	PIT.CH[2].TCTRL.B.TEN = 0x01; /* enable channel */
-		
 }
 
 //level from 0 to 10;
@@ -153,7 +133,6 @@ void initGPIO(void){
 	initModesAndClock(); 				/* Initialize mode entries and system clock */
 	
 	initSTM();
-	//initPIT();
 	
 	initGPIO();
 		
@@ -162,46 +141,106 @@ void initGPIO(void){
 	setWindowLevel( (unsigned int) j );
 	while (1) 
 	{
-
 		while(!SIU.GPDI[64].B.PDI && !SIU.GPDI[65].B.PDI);
-		STM.CNT.R = 0;
-		while(!STM.CH[0].CIR.B.CIF);
-		STM.CH[0].CIR.B.CIF = 0x01;
-		
 		if(SIU.GPDI[64].B.PDI){
-			j++;
-			direction = 0x01;
-			
-		}else if(SIU.GPDI[65].B.PDI){
-			j--;
-			direction = 0x00;
+			GPDI_value = 64;
+		}else{
+			GPDI_value = 65;
+		}			
+		
+		reset_flags();
+		RESET_STM_COUNTER;
+		Ten_ms_passed = 0;
+				
+		while(SIU.GPDI[GPDI_value].B.PDI && !flag_Ten_ms);
+		if(SIU.GPDI[GPDI_value].B.PDI){
+			Ten_ms_passed = _OK;
+		}else{
+			Ten_ms_passed = 0;
 		}
-		if(j == 11){
-			j = 10;
-		}else if(j == -1){
-			j = 0;
-		}else{ 
-			if(direction){
-				LED_UP = RGB_ON;
-			}else{
-				LED_DOWN = RGB_ON;
+		
+		
+		if(Ten_ms_passed){
+			first_time = 1;
+			break_flag = 1;
+			while(break_flag){
+				if(GPDI_value == 65){
+					j--;
+					direction = 0x00;
+				}else if(GPDI_value == 64){
+					j++;
+					direction = 0x01;
+				}
+				
+				if(j == 11){
+					j = 10;
+					break_flag = 0;
+				}else if(j == -1){
+					j = 0;
+					break_flag = 0;
+				}else{ 
+					if(direction){
+						LED_UP = RGB_ON;
+					}else{
+						LED_DOWN = RGB_ON;
+					}
+				}
+					
+				setWindowLevel(j);
+				
+				if(!first_time && flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI)
+					break_flag = 0;
+				
+				RESET_STM_COUNTER;
+				
+				while(!STM.CH[1].CIR.B.CIF);
+				STM.CH[1].CIR.B.CIF = 0x01;
+		
+				if(first_time){
+					flag_FiveH_ms = 0;
+					RESET_STM_COUNTER;
+					STM.CH[2].CCR.B.CEN = 0x01;
+					first_time = 0;
+				}
+					
+				//if(flag_FiveH_ms && SIU.GPDI[GPDI_value].B.PDI)
+				//	break_flag = 0;
 			}
-		}
 			
-		setWindowLevel(j);
-		
-		while(!STM.CH[1].CIR.B.CIF);
-		STM.CH[1].CIR.B.CIF = 0x01;
-		
-		LED_UP = RGB_OFF;
-		LED_DOWN = RGB_OFF;
-		//SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
-		
-		/*for(j = 0; j<=10; j++){
-			setWindowLevel(j);
-			for(a = 0; a<1000000; a++);
-		}*/
-		
+			if(flag_FiveH_ms){
+				while(SIU.GPDI[GPDI_value].B.PDI){
+					if(SIU.GPDI[65].B.PDI){
+						j--;
+						direction = 0x00;
+					}else if(SIU.GPDI[64].B.PDI){
+						j++;
+						direction = 0x01;
+					}
+					
+					if(j == 11){
+						j = 10;
+					}else if(j == -1){
+						j = 0;
+					}else{ 
+						if(direction){
+							LED_UP = RGB_ON;
+						}else{
+							LED_DOWN = RGB_ON;
+						}
+					}
+						
+					setWindowLevel(j);
+					
+					RESET_STM_COUNTER;
+					while(!STM.CH[1].CIR.B.CIF);
+					STM.CH[1].CIR.B.CIF = 0x01;
+				}
+			}
+			
+			LED_UP = RGB_OFF;
+			LED_DOWN = RGB_OFF;
+			
+		} /* End ten ms while*/		
 		
 	} /* end while(1) */
 }/* end main */
