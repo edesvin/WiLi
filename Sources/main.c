@@ -1,15 +1,20 @@
-/*STM implementation */
+/*LED UP and DOWN implementation */
 
 #include "MPC5606B.h"
 #include "IntcInterrupts.h"
 
-#define ValTMR 0X61A7FF
+#define ValTMR 		0X61A7FF
 
-#define Ten_ms 0x0000FA00
-#define FourH_ms 0x0186A000
-#define FiveH_ms 0x01E84800
-#define OUTPUT 0x0200
-#define INPUT 0x0100
+#define Ten_ms 		0x0000FA00
+#define FourH_ms	0x0186A000
+#define FiveH_ms 	0x01E84800
+#define OUTPUT 		0x0200
+#define INPUT 		0x0100
+#define LED_DOWN	SIU.GPDO[10].B.PDO
+#define LED_UP	 	SIU.GPDO[11].B.PDO
+#define RGB_ON		0x00
+#define RGB_OFF		0x01
+
 
 int dly,lly;
 
@@ -17,8 +22,10 @@ volatile unsigned int flag_STM0 = 0;
 volatile unsigned int flag_STM1 = 0;
 volatile unsigned int flag_STM2 = 0;
 unsigned int myvar = 0;
-unsigned int i = 0, j = 0;
+unsigned int i = 0;
+int j = 0;
 unsigned int a = 0;
+unsigned int direction = 0;
 /* main.c - eMIOS OPWM example */
 /* Description:  eMIOS example using Modulus Counter and OPWM modes */
 /* Rev 1.8 Mar 14 2010 SM - modified initModesAndClock, updated header file */
@@ -123,12 +130,14 @@ void setWindowLevel(unsigned int level){
 
 void initGPIO(void){
 	
-	for(i = 0; i<12; i++){ 		/* OUTPUTS - A0 - A11 */
-		SIU.PCR[i].R = OUTPUT;	
+	for(i = 0; i<12; i++){ 			/* OUTPUTS - A0 - A11 */
+		SIU.PCR[i].R = OUTPUT;		/* OUTPUT = 0x0200 */
 		SIU.GPDO[i].B.PDO = 0x00;	
 	}
+	SIU.GPDO[10].B.PDO = 0x01;	
+	SIU.GPDO[11].B.PDO = 0x01;	
 	
-	SIU.PCR[64].R = INPUT; /* INPUTS */
+	SIU.PCR[64].R = INPUT; /* INPUT = 0x0100 */
 	SIU.PCR[65].R = INPUT;
 	SIU.PCR[66].R = INPUT;
 	SIU.PCR[67].R = INPUT;
@@ -139,7 +148,7 @@ void initGPIO(void){
 	//SIU.PCR[71].R = 0x0200;				/* Program the drive enable pin of LED4 (PE7) as output*/
 	
 }
-void main (void) {
+	void main (void) {
 	
 	initModesAndClock(); 				/* Initialize mode entries and system clock */
 	
@@ -150,7 +159,7 @@ void main (void) {
 		
 	STM.CNT.R = 0;
 	j = 0;
-	setWindowLevel(j);
+	setWindowLevel( (unsigned int) j );
 	while (1) 
 	{
 
@@ -159,19 +168,33 @@ void main (void) {
 		while(!STM.CH[0].CIR.B.CIF);
 		STM.CH[0].CIR.B.CIF = 0x01;
 		
-		if(SIU.GPDI[64].B.PDI)
+		if(SIU.GPDI[64].B.PDI){
 			j++;
-		else if(SIU.GPDI[65].B.PDI){
+			direction = 0x01;
+			
+		}else if(SIU.GPDI[65].B.PDI){
 			j--;
+			direction = 0x00;
 		}
-		if(j == 11)
+		if(j == 11){
 			j = 10;
-		if(j == -1)
+		}else if(j == -1){
 			j = 0;
+		}else{ 
+			if(direction){
+				LED_UP = RGB_ON;
+			}else{
+				LED_DOWN = RGB_ON;
+			}
+		}
+			
 		setWindowLevel(j);
 		
 		while(!STM.CH[1].CIR.B.CIF);
 		STM.CH[1].CIR.B.CIF = 0x01;
+		
+		LED_UP = RGB_OFF;
+		LED_DOWN = RGB_OFF;
 		//SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
 		
 		/*for(j = 0; j<=10; j++){
