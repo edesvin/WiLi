@@ -14,10 +14,10 @@
 
 volatile T_UBYTE rub_FlagValUpAut = 0;
 volatile T_UBYTE rub_FlagValUpMan = 0;
-volatile T_UBYTE FValAutUP = 0;
+volatile T_UBYTE rub_FValAutUP = 0;
 volatile T_UBYTE rub_FlagValDownAut = 0;
 volatile T_UBYTE rub_FlagValDownMan = 0;
-volatile T_UBYTE FValAutDown = 0;
+volatile T_UBYTE rub_FValAutDown = 0;
 
 volatile T_UBYTE rub_FlagValAnPi = 0;
 
@@ -26,9 +26,9 @@ volatile T_UWORD ruw_CountUp = 0;
 volatile T_UWORD ruw_CountDown = 0;
 volatile T_UWORD ruw_CountAnPi = 0;
 
-volatile T_UBYTE F400 = 0;
-volatile T_UBYTE Fled = 0;
-volatile T_UWORD count400 = 0;
+volatile T_UBYTE rub_F400 = 0;
+volatile T_UBYTE rub_Fled = 0;
+volatile T_UWORD ruw_count400 = 0;
 
 
 void isr(void){
@@ -37,17 +37,17 @@ void isr(void){
 		
 
 		////////////////////////////////////////////////
-		if(PB_UP && !FValAutDown){
-			FValAutDown = 0;
+		if(PB_UP && !rub_FValAutDown){
+			rub_FValAutDown = 0;
 			ruw_CountUp++;
 			if(ruw_CountUp >= 10 && ruw_CountUp < 500){
-				F400=1;
+				rub_F400=1;
 				rub_FlagValUpAut = 1;
 				rub_FlagValUpMan = 0;
 				rub_FlagValDownAut = 0;
 				rub_FlagValDownMan = 0;
 			}
-			else if(ruw_CountUp >= 500 && !FValAutUP){
+			else if(ruw_CountUp >= 500 && !rub_FValAutUP){
 				rub_FlagValUpAut = 0;
 				rub_FlagValUpMan = 1;
 				rub_FlagValDownAut = 0;
@@ -58,23 +58,23 @@ void isr(void){
 		}
 		else{
 			if(rub_FlagValUpAut){
-				FValAutUP = 1;
+				rub_FValAutUP = 1;
 			}
 			ruw_CountUp = 0;
 			rub_FlagValUpMan = 0;
 		}
 		////////////////////////////////////////////////
-		if(PB_DOWN && !FValAutUP){
+		if(PB_DOWN && !rub_FValAutUP){
 			ruw_CountDown++;
-			FValAutUP = 0;
+			rub_FValAutUP = 0;
 			if(ruw_CountDown >= 10 && ruw_CountDown < 500){
-				F400=1;
+				rub_F400=1;
 				rub_FlagValDownAut = 1;
 				rub_FlagValDownMan = 0;
 				rub_FlagValUpAut = 0;
 				rub_FlagValUpMan = 0;
 			}
-			else if(ruw_CountDown >= 500 && !FValAutDown){
+			else if(ruw_CountDown >= 500 && !rub_FValAutDown){
 				rub_FlagValDownAut = 0;
 				rub_FlagValDownMan = 1;
 				rub_FlagValUpAut = 0;
@@ -85,7 +85,7 @@ void isr(void){
 		}
 		else{
 			if(rub_FlagValDownAut){ 
-				FValAutDown = 1;			
+				rub_FValAutDown = 1;			
 			}
 			ruw_CountDown = 0;
 			rub_FlagValDownMan = 0;
@@ -93,7 +93,7 @@ void isr(void){
 		////////////////////////////////////////////////
 		if(PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagValDownAut && !rub_FlagValDownMan){
 			ruw_CountAnPi++;
-			FValAutUP = 0;
+			rub_FValAutUP = 0;
 			if(ruw_CountAnPi >= 10){
 				rub_FlagValAnPi = 1;
 				ruw_CountAnPi = 0;
@@ -102,7 +102,7 @@ void isr(void){
 				rub_FlagValDownMan = 0;
 				rub_FlagValUpAut = 0;
 				rub_FlagValUpMan = 0;
-				FValAutDown = 1;
+				rub_FValAutDown = 1;
 				
 			}
 		}
@@ -116,17 +116,17 @@ void isr(void){
 			rub_FlagValDownMan = 0;
 			rub_FlagValUpAut = 0;
 			rub_FlagValUpMan = 0;
-			FValAutDown = 0;
-			FValAutUP = 0;
+			rub_FValAutDown = 0;
+			rub_FValAutUP = 0;
 		}
 		
 		/////////////////////////////////////////////////
 		
-		if(F400){
-			count400++;
-			if(count400>=400){
-				count400=0;
-				Fled=1;
+		if(rub_F400){
+			ruw_count400++;
+			if(ruw_count400>=400){
+				ruw_count400=0;
+				rub_Fled=1;
 			}
 		}
 		
@@ -182,8 +182,8 @@ void main (void) {
 	while (1) {
 		
 		if(rub_FlagValUpAut || rub_FlagValUpMan){
-			if(Fled){
-				Fled = 0;
+			if(rub_Fled){
+				rub_Fled = 0;
 				SIU.GPDO[lub_CountIndice].B.PDO = 1;
 				SIU.GPDO[10].B.PDO = 0;
 				SIU.GPDO[11].B.PDO = 1;
@@ -191,7 +191,7 @@ void main (void) {
 				if(lub_CountIndice >= 10){
 					lub_CountIndice = 10;
 					rub_FlagValUpAut = 0;
-					FValAutUP = 0;
+					rub_FValAutUP = 0;
 				}
 				
 
@@ -199,12 +199,12 @@ void main (void) {
 		}
 		////////////////////////////////////////////////
 		else if(rub_FlagValDownAut || rub_FlagValDownMan){
-			if(Fled){
-				Fled = 0;
+			if(rub_Fled){
+				rub_Fled = 0;
 				if(lub_CountIndice <= 1) {
 					lub_CountIndice = 1;
 					rub_FlagValDownAut = 0;
-					FValAutDown = 0;
+					rub_FValAutDown = 0;
 					SIU.GPDO[11].B.PDO = 1;
 				}
 				SIU.GPDO[lub_CountIndice-1].B.PDO = 0;
@@ -221,20 +221,20 @@ void main (void) {
 					rub_FlagValAnPi = 0;
 					while(!PIT.CH[1].TFLG.B.TIF);
 					PIT.CH[1].TFLG.B.TIF = 1;
-					Fled = 0;
+					rub_Fled = 0;
 					rub_FlagValDownAut = 0;
 					rub_FlagValDownMan = 0;
 					rub_FlagValUpAut = 0;
 					rub_FlagValUpMan = 0;
-					FValAutDown = 0;
-					FValAutUP = 0;
+					rub_FValAutDown = 0;
+					rub_FValAutUP = 0;
 				}
 				
 			}
 		}
 		////////////////////////////////////////////////
 		else if(!rub_FlagValUpAut && !rub_FlagValUpMan && !rub_FlagValDownAut && !rub_FlagValDownMan){
-			Fled = 0;
+			rub_Fled = 0;
 			SIU.GPDO[10].B.PDO = 1;
 			SIU.GPDO[11].B.PDO = 1;
 		}
