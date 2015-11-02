@@ -1,20 +1,60 @@
 #include "MPC5606B.h"
+#include "stdtypedef.h"
 #include "IntcInterrupts.h"
 
-#define HMain0 1
-#define HMain1 0
+#define Emain0 1
+#if Emain0 == 1
 
-#if HMain0 == 1
+#define PB_UP		SIU.GPDI[64].B.PDI
+#define PB_DOWN 	SIU.GPDI[65].B.PDI
+#define PB_AnPi 	SIU.GPDI[66].B.PDI
 
-#define ValTMR 0X01869FFF 
+#define ValTMR_0 		0x0000F9FF
+#define ValTMR_1 		0x01869FFF
 
-int dly,lly;
+volatile T_UBYTE rub_FlagValUpAut = 0;
+volatile T_UBYTE rub_FlagValUpMan = 0;
+volatile T_UBYTE rub_FlagValDownAut = 0;
+volatile T_UBYTE rub_FlagValDownMan = 0;
+volatile T_UBYTE rub_FlagValAnPi = 0;
+
+volatile T_UWORD ruw_CountUp = 0;
+volatile T_UWORD ruw_CountDown = 0;
+volatile T_UWORD ruw_CountAnPi = 0;
+
+volatile T_UBYTE F400 = 0;
+volatile T_UBYTE Fled = 0;
+volatile T_UWORD count400 = 0;
+
 
 void isr(void){
-	if( PIT.CH[2].TFLG.B.TIF ){
+	if( PIT.CH[0].TFLG.B.TIF ){
+		PIT.CH[0].TFLG.B.TIF = 1;
 		
-		PIT.CH[2].TFLG.B.TIF = 1;
-		SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
+		if(PB_UP){
+			ruw_CountUp++;
+			if(ruw_CountUp >= 10 && ruw_CountUp < 500){
+				F400=1;
+				rub_FlagValUpAut = 1;
+			}
+			else if(ruw_CountUp >= 500){
+				rub_FlagValUpMan = 1;
+				if(ruw_CountUp > 4000) ruw_CountUp = 4000;
+			}
+			
+
+		}
+		else{
+			ruw_CountUp = 0;
+		}
+		
+		if(F400){
+			count400++;
+			if(count400>=400){
+				count400=0;
+				Fled=1;
+			}
+		}
 		
 	}
 }
@@ -29,55 +69,60 @@ void initModesAndClock(void) {
 }
 
 /******************************************************************************/
-void initPIT(uint32_t LDVALOR){
-	PIT.PITMCR.B.MDIS = 0;
-	PIT.PITMCR.B.FRZ = 1;
-	PIT.CH[2].LDVAL.R = LDVALOR;
-	PIT.CH[2].TCTRL.B.TEN = 1;
-	PIT.CH[2].TCTRL.B.TIE = 1;
+void initPIT(uint32_t LDVALOR_0, uint32_t LDVALOR_1){
+	PIT.PITMCR.B.MDIS = 0;			//Enable Clock for PIT
+	PIT.PITMCR.B.FRZ = 1;			//Detiene el timer en modo debuger
+	PIT.CH[0].LDVAL.R = LDVALOR_0;	//Carga el valor con el que se desbordara el timer
+	PIT.CH[0].TCTRL.B.TEN = 1;		//Habilita el timer
+	PIT.CH[0].TCTRL.B.TIE = 1;		//Habilita interrupcion del timer
+	PIT.CH[0].TFLG.B.TIF = 1;
+	
+	PIT.CH[1].LDVAL.R = LDVALOR_1;	//Carga el valor con el que se desbordara el timer
+	PIT.CH[1].TCTRL.B.TEN = 1;		//Habilita el timer
+	PIT.CH[1].TCTRL.B.TIE = 0;		//Habilita interrupcion del timer
+	PIT.CH[1].TFLG.B.TIF = 1;
 }
 /******************************************************************************/
 void main (void) {
-	unsigned int *P1 = (unsigned int *)0x00800000;
-	unsigned int *P2 = (unsigned int *)0x00AAAC;
-	int i,tmp,status;
 	
+	T_UWORD luw_i;
+	T_UBYTE lub_CountIndice = 0;
 	
-	vuint16_t PORTxIN[4],PORTxOUT[4];
+	initModesAndClock(); 								/* Initialize mode entries and system clock */
 	
-	initModesAndClock(); 				/* Initialize mode entries and system clock */
-	
-	INTC_InstallINTCInterruptHandler(isr,61,1);
+	INTC_InstallINTCInterruptHandler(isr,59,1);
 	INTC.CPR.R = 0;
 	
-	//for(i = 0; i <= 3; i++) PORTxIN[i] = SIU.GPDO[i + 68].B.PDO;
-	SIU.PCR[68].R = 0x0200;	
-	SIU.PCR[69].R = 0x0200;		
-	SIU.PCR[70].R = 0x0200;		
-	SIU.PCR[71].R = 0x0200;		
+	for(luw_i = 0; luw_i <=11; luw_i++) SIU.PCR[luw_i].R = 0x0200;
+	for(luw_i = 64; luw_i <=67; luw_i++) SIU.PCR[luw_i].R = 0x0100;
+	for(luw_i = 0; luw_i <= 9; luw_i++) SIU.GPDO[luw_i].B.PDO = 0;
+	SIU.GPDO[10].B.PDO = 1;
+	SIU.GPDO[11].B.PDO = 1;
 	
-	SIU.PCR[64].R = 0x0100;
-	SIU.PCR[65].R = 0x0100;
-	SIU.PCR[66].R = 0x0100;
-	SIU.PCR[67].R = 0x0100;
-	
-	for(i = 68; i <= 70; i++) SIU.GPDO[i].B.PDO = 1;
-	initPIT(ValTMR);
-/*
-	DFLASH.MCR.R = 0x00000010; 
-	*P2 = 0xFFFFFF21; 
-	*P1 = 0x00000020;
-	DFLASH.MCR.R = 0x00000011; 
-	do {
-		tmp = DFLASH.MCR.R; 
-	} while ( !(tmp & 0x00000400) );
-	status = DFLASH.MCR.R & 0x0000020;
-	DFLASH.MCR.R = 0x00000010; 
-	DFLASH.MCR.R = 0x00000000; */
+	SIU.PCR[68].R = 0x0200;		
+
+	initPIT(ValTMR_0, ValTMR_1);
 	
 	while (1) {
-		SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
+		
+		if(rub_FlagValUpAut){
+			PIT.CH[1].TCTRL.B.TEN = 0;
+			PIT.CH[1].TCTRL.B.TEN = 1;
+			rub_FlagValUpAut = 0;
+			while(lub_CountIndice <= 9){
+				if(!rub_FlagValUpMan){
+					while(!Fled);
+					Fled=0;
+					//PIT.CH[1].TFLG.B.TIF = 1;
+					SIU.GPDO[lub_CountIndice].B.PDO = 1;
+					lub_CountIndice++;
+				}
+			}
+		}
 	}
 }
 
 #endif
+
+
+
