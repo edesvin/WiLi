@@ -34,6 +34,8 @@ volatile T_UWORD count400 = 0;
 void isr(void){
 	if( PIT.CH[0].TFLG.B.TIF ){
 		PIT.CH[0].TFLG.B.TIF = 1;
+		
+
 		////////////////////////////////////////////////
 		if(PB_UP && !FValAutDown){
 			FValAutDown = 0;
@@ -108,6 +110,18 @@ void isr(void){
 			ruw_CountAnPi = 0;
 		}
 		////////////////////////////////////////////////
+		
+		if(PB_UP && PB_DOWN ){
+			rub_FlagValDownAut = 0;
+			rub_FlagValDownMan = 0;
+			rub_FlagValUpAut = 0;
+			rub_FlagValUpMan = 0;
+			FValAutDown = 0;
+			FValAutUP = 0;
+		}
+		
+		/////////////////////////////////////////////////
+		
 		if(F400){
 			count400++;
 			if(count400>=400){
