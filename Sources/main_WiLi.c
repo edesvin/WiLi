@@ -63,7 +63,7 @@ void isr(void){
 			ruw_CountUp = 0;
 			rub_FlagValUpMan = 0;
 		}
-		////////////////////////////////////////////////
+		/* ****************************************** */
 		if(PB_DOWN && !rub_FValAutUP){
 			ruw_CountDown++;
 			rub_FValAutUP = 0;
@@ -158,6 +158,13 @@ void initPIT(uint32_t LDVALOR_0, uint32_t LDVALOR_1){
 }
 /******************************************************************************/
 
+void initGPIO(void){
+	for(luw_i = 0; luw_i <=11; luw_i++) SIU.PCR[luw_i].R = 0x0200;
+	for(luw_i = 64; luw_i <=67; luw_i++) SIU.PCR[luw_i].R = 0x0100;
+	for(luw_i = 0; luw_i <= 9; luw_i++) SIU.GPDO[luw_i].B.PDO = 0;
+	SIU.GPDO[10].B.PDO = 1;
+	SIU.GPDO[11].B.PDO = 1;	
+}
 
 void main (void) {
 	
@@ -169,13 +176,7 @@ void main (void) {
 	INTC_InstallINTCInterruptHandler(isr,59,1);
 	INTC.CPR.R = 0;
 	
-	for(luw_i = 0; luw_i <=11; luw_i++) SIU.PCR[luw_i].R = 0x0200;
-	for(luw_i = 64; luw_i <=67; luw_i++) SIU.PCR[luw_i].R = 0x0100;
-	for(luw_i = 0; luw_i <= 9; luw_i++) SIU.GPDO[luw_i].B.PDO = 0;
-	SIU.GPDO[10].B.PDO = 1;
-	SIU.GPDO[11].B.PDO = 1;
-	
-	SIU.PCR[68].R = 0x0200;		
+	initGPIO();
 
 	initPIT(ValTMR_0, ValTMR_1);
 	
@@ -193,11 +194,9 @@ void main (void) {
 					rub_FlagValUpAut = 0;
 					rub_FValAutUP = 0;
 				}
-				
-
 			}
 		}
-		////////////////////////////////////////////////
+/******************************************************************************/
 		else if(rub_FlagValDownAut || rub_FlagValDownMan){
 			if(rub_Fled){
 				rub_Fled = 0;
