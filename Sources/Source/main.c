@@ -31,7 +31,7 @@ volatile T_UWORD ruw_count400 = 0;
 
 void main (void) {
 	
-	initModesAndClock();			/* Initialize mode entries and system clock */
+	initModesAndClock();			/* Initialise mode entries and system clock */
 	initGPIO();
 	initPIT(ValTMR_0, ValTMR_1);
 	
@@ -41,6 +41,3 @@ void main (void) {
 }
 
 #endif
-
-
-

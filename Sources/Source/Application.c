@@ -32,6 +32,8 @@ void WiLi_Aplication(void){
 			SIU.GPDO[11].B.PDO = 1;
 			rub_CountIndice++;
 			if(rub_CountIndice >= 10){
+				SIU.GPDO[10].B.PDO = 1;
+				SIU.GPDO[11].B.PDO = 1;
 				rub_CountIndice = 10;
 				rub_FlagValUpAut = 0;
 				rub_FValAutUP = 0;
@@ -53,6 +55,10 @@ void WiLi_Aplication(void){
 			SIU.GPDO[11].B.PDO = 0;
 			rub_CountIndice--;
 			
+			if(rub_CountIndice == 0){
+				SIU.GPDO[10].B.PDO = 1;
+				SIU.GPDO[11].B.PDO = 1;
+			}
 			if(rub_CountIndice == 0 && rub_FlagValAnPi){
 				SIU.GPDO[11].B.PDO = 1;
 				PIT.CH[1].TCTRL.B.TEN = 0;

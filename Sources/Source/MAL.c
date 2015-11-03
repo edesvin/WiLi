@@ -9,6 +9,8 @@
 #include "MAL.h"
 #include "stdtypedef.h"
 
+extern T_UBYTE rub_CountIndice;
+
 extern volatile T_UBYTE rub_FlagValUpAut;
 extern volatile T_UBYTE rub_FlagValUpMan;
 extern volatile T_UBYTE rub_FValAutUP;
@@ -30,9 +32,8 @@ extern volatile T_UWORD ruw_count400;
 void isr(void){
 	if( PIT.CH[0].TFLG.B.TIF ){
 		PIT.CH[0].TFLG.B.TIF = 1;
-		
-
 		/******************************************************************************/
+		
 		if(PB_UP && !rub_FValAutDown){
 			rub_FValAutDown = 0;
 			ruw_CountUp++;
@@ -60,6 +61,7 @@ void isr(void){
 			rub_FlagValUpMan = 0;
 		}
 		/******************************************************************************/
+		
 		if(PB_DOWN && !rub_FValAutUP){
 			ruw_CountDown++;
 			rub_FValAutUP = 0;
@@ -87,7 +89,8 @@ void isr(void){
 			rub_FlagValDownMan = 0;
 		}
 		/**************************************************************************************************/
-		if(PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagValDownAut && !rub_FlagValDownMan){
+		
+		if(PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagValDownAut && !rub_FlagValDownMan && rub_CountIndice != 10){
 			ruw_CountAnPi++;
 			rub_FValAutUP = 0;
 			if(ruw_CountAnPi >= 10){
@@ -107,7 +110,7 @@ void isr(void){
 		}
 		/******************************************************************************/
 		
-		if(PB_UP && PB_DOWN ){
+		if(PB_UP && PB_DOWN && (!rub_FlagValUpAut && !rub_FlagValDownAut)){
 			rub_FlagValDownAut = 0;
 			rub_FlagValDownMan = 0;
 			rub_FlagValUpAut = 0;
