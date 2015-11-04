@@ -24,7 +24,7 @@ extern volatile T_UBYTE rub_Fled;
 
 void WiLi_Aplication(void){
 
-	if(rub_FlagValUpAut || rub_FlagValUpMan){
+	if((rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagValDownMan && !rub_FlagValDownAut){
 		if(rub_Fled){
 			rub_Fled = 0;
 			SIU.GPDO[rub_CountIndice].B.PDO = 1;
@@ -41,7 +41,7 @@ void WiLi_Aplication(void){
 		}
 	}
 /******************************************************************************/
-	else if(rub_FlagValDownAut || rub_FlagValDownMan){
+	else if((rub_FlagValDownAut || rub_FlagValDownMan) && !rub_FlagValUpAut && !rub_FlagValUpMan){
 		if(rub_Fled){
 			rub_Fled = 0;
 			if(rub_CountIndice <= 1) {

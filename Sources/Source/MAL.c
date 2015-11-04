@@ -33,8 +33,7 @@ void isr(void){
 	if( PIT.CH[0].TFLG.B.TIF ){
 		PIT.CH[0].TFLG.B.TIF = 1;
 		/******************************************************************************/
-		
-		if(PB_UP && !rub_FValAutDown){
+		if(PB_UP && !rub_FlagValAnPi ){
 			rub_FValAutDown = 0;
 			ruw_CountUp++;
 			if(ruw_CountUp >= 10 && ruw_CountUp < 500){
@@ -53,6 +52,7 @@ void isr(void){
 			}
 			else;
 		}
+
 		else{
 			if(rub_FlagValUpAut){
 				rub_FValAutUP = 1;
@@ -61,8 +61,7 @@ void isr(void){
 			rub_FlagValUpMan = 0;
 		}
 		/******************************************************************************/
-		
-		if(PB_DOWN && !rub_FValAutUP){
+		if(PB_DOWN ){
 			ruw_CountDown++;
 			rub_FValAutUP = 0;
 			if(ruw_CountDown >= 10 && ruw_CountDown < 500){
