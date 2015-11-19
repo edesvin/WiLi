@@ -63,6 +63,8 @@ extern volatile T_UWORD ruw_CountUp = 0;
 extern volatile T_UWORD ruw_CountDown = 0;
 extern volatile T_UWORD ruw_CountAnPi = 0;
 
+extern volatile T_UBYTE rub_FlagL_UP = 0;
+extern volatile T_UBYTE rub_FlagL_DOWN = 0;
 /*============================================================================*/
 void Task_0(void){
 	
@@ -97,6 +99,7 @@ void Task_1(void){
 				break;
 				
 			default:
+				Func_IDLE();
 				break;
 				
 		}
@@ -104,27 +107,53 @@ void Task_1(void){
 }
 /*============================================================================*/
 T_SBYTE Func_UP(T_SBYTE lsb_index){
-	
+	rub_FlagL_UP = 1;
+	if(rub_FlagL_DOWN){
+		rub_FlagL_DOWN = 0;
+		lsb_index++;
+	}
 	SIU.GPDO[lsb_index].B.PDO = 1;
+	Led_UP = ON;
+	Led_DOWN = OFF;
 	lsb_index++;
 	
 	if(lsb_index >= 10 ){
 		Reset_All_Flags();
-		lsb_index = 9;		
+		lsb_index = 9;
+		//Led_UP = OFF;
+		//Led_DOWN = OFF;
+		rub_FlagL_UP = 0;
+		rub_FlagL_DOWN = 0;
 	}
 	return lsb_index;
 }
 /*============================================================================*/
 T_SBYTE Func_DOWN(T_SBYTE lsb_index){
-	
+	rub_FlagL_DOWN = 1;
+	if(rub_FlagL_UP){
+		rub_FlagL_UP = 0;
+		lsb_index--;
+	}
 	SIU.GPDO[lsb_index].B.PDO = 0;
+	Led_UP = OFF;
+	Led_DOWN = ON;
 	if(lsb_index <= 0 ){
-		lsb_index = 0;	
+		Reset_All_Flags();
+		lsb_index = 0;
+		//Led_UP = OFF;
+		//Led_DOWN = OFF;
+		rub_FlagL_UP = 0;
+		rub_FlagL_DOWN = 0;
 	}
 	else{
 		lsb_index--;
 	}
 	return lsb_index;
+}
+/*============================================================================*/
+void Func_IDLE(void){
+	Led_UP = OFF;
+	Led_DOWN = OFF;	
 }
 /*============================================================================*/
 void Func_Dir(void){
@@ -135,19 +164,24 @@ void Func_Dir(void){
 	else if(rub_FlagValDownAut || rub_FlagValDownMan){
 		rub_Direction = L_DOWN;
 		if(rub_FlagValAnPi && rsb_CountIndex == 0){
+			rub_Direction = L_IDLE;
 			rub_FlagValAnPi = 0;
-			SIU.GPDO[0].B.PDO = 0;
+			First_Led = 0;
 			ruw_CounterWait5seg = 12;
 			rub_FlagWait5seg = 1;
+			Led_UP = OFF;
+			Led_DOWN = OFF;
 		}
 	}
 	else if(!rub_FlagValUpAut && !rub_FlagValUpMan && !rub_FlagValDownAut && !rub_FlagValDownMan){
-		SIU.GPDO[10].B.PDO = 1;
-		SIU.GPDO[11].B.PDO = 1;
 		rub_Direction = L_IDLE;
+		Led_UP = OFF;
+		Led_DOWN = OFF;
 	}
 	else{
 		rub_Direction = L_IDLE;
+		Led_UP = OFF;
+		Led_DOWN = OFF;
 	}
 }
 /*============================================================================*/

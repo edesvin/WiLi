@@ -53,6 +53,14 @@
 #define PB_UP		SIU.GPDI[64].B.PDI
 #define PB_DOWN 	SIU.GPDI[66].B.PDI
 #define PB_AnPi 	SIU.GPDI[67].B.PDI
+
+#define Led_UP		SIU.GPDO[11].B.PDO
+#define Led_DOWN	SIU.GPDO[10].B.PDO
+
+#define First_Led	SIU.GPDO[0].B.PDO
+
+#define ON 0
+#define OFF 1
 /*============================================================================*/
 extern void Task_0(void);
 extern void Task_1(void);
@@ -60,6 +68,7 @@ extern void Task_1(void);
 
 T_SBYTE Func_UP(T_SBYTE lsb_index);
 T_SBYTE Func_DOWN(T_SBYTE lsb_index);
+void Func_IDLE(void);
 
 void Val_PushB(void);
 void Func_Dir(void);
