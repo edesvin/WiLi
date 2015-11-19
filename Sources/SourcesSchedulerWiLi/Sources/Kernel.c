@@ -83,7 +83,7 @@ void main(void){
 					
 				}else{
 					
-					raub_DynConuter[luw_i] = cas_STAT[luw_i].uw_T;
+					raub_DynConuter[luw_i] = cas_STAT[luw_i].uw_T - 1;
 					(cas_STAT[luw_i].F_Pointer)();
 					
 				}

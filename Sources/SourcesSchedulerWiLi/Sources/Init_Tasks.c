@@ -50,8 +50,8 @@ extern volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
 /*============================================================================*/
 const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 		
-		{		Task_0,		0	,		0		},
-		{		Task_1,		399,		1		},
+		{		Task_0,		1	,		0		},
+		{		Task_1,		400,		1		},
 		
 		/*	Add here your new task and a comma before the last one	*/			
 		/*	{	Function Pointer	,	Period	,		Offset	}	*/	

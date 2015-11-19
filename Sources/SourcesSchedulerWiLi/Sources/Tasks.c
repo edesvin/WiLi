@@ -70,15 +70,26 @@ void Task_0(void){
 	
 	SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
 	Val_PushB();
-
+	if(ruw_CounterWait5seg > 0){
+			ruw_CounterWait5seg--;
+			rub_FlagWait5seg = 1;
+			rub_FlagValAnPi = 0;
+			Reset_All_Flags();
+			rsb_CountIndex = 0;
+			rub_FlagL_DOWN = 0;
+			rub_FlagL_UP = 0;
+		}
+	else{
+		rub_FlagWait5seg = 0;
+	}
 }
 /*============================================================================*/
 void Task_1(void){
 
 	SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
-	Func_Dir(); 
+	Func_Dir();
 	
-	if(ruw_CounterWait5seg > 0){
+	/*if(ruw_CounterWait5seg > 0){
 		ruw_CounterWait5seg--;
 	}
 
@@ -86,8 +97,9 @@ void Task_1(void){
 		if(rub_FlagWait5seg){
 			rub_FlagWait5seg = 0;			
 			Reset_All_Flags();
-			Func_Dir(); 
-		}
+			Func_Dir();
+		}*/
+	if(!rub_FlagWait5seg){
 		switch (rub_Direction) {
 			
 			case L_UP:
@@ -103,6 +115,9 @@ void Task_1(void){
 				break;
 				
 		}
+	}
+	else{
+		/****/
 	}
 }
 /*============================================================================*/
@@ -120,8 +135,6 @@ T_SBYTE Func_UP(T_SBYTE lsb_index){
 	if(lsb_index >= 10 ){
 		Reset_All_Flags();
 		lsb_index = 9;
-		//Led_UP = OFF;
-		//Led_DOWN = OFF;
 		rub_FlagL_UP = 0;
 		rub_FlagL_DOWN = 0;
 	}
@@ -140,8 +153,6 @@ T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 	if(lsb_index <= 0 ){
 		Reset_All_Flags();
 		lsb_index = 0;
-		//Led_UP = OFF;
-		//Led_DOWN = OFF;
 		rub_FlagL_UP = 0;
 		rub_FlagL_DOWN = 0;
 	}
@@ -167,8 +178,7 @@ void Func_Dir(void){
 			rub_Direction = L_IDLE;
 			rub_FlagValAnPi = 0;
 			First_Led = 0;
-			ruw_CounterWait5seg = 12;
-			rub_FlagWait5seg = 1;
+			ruw_CounterWait5seg = 5000;
 			Led_UP = OFF;
 			Led_DOWN = OFF;
 		}
