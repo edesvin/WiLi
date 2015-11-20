@@ -4,15 +4,16 @@
 /*                        OBJECT SPECIFICATION                                */
 /*============================================================================*/
 /*!
- * $Source: Tasks.c $
- * $Revision: 1.5 $
+ * $Source: App.h $
+ * $Revision: 1.0 $
  * $Author: Adrián Zacarías Siete $
- * $Date: 17-11-2015 $
+ * $Date: 20-11-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
 /** \file
-    It holds the implementation of the functions that contain the tasks.
+    Prototypes of all the functions implemented in the tasks used by the 
+    scheduler. 
 */
 /*============================================================================*/
 /* COPYRIGHT (C) CONTINENTAL AUTOMOTIVE 2014                                  */
@@ -36,35 +37,51 @@
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
 /*
- * $Log: Tasks.c  $
+ * $Log: App.h  $
   ============================================================================*/
-
+#ifndef APP_H_
+#define APP_H_
 /* Includes */
 /*============================================================================*/
+#include "MPC5606B.h"
+#include "stdtypedef.h"
 #include "Tasks.h"
 /*============================================================================*/
+#define L_IDLE 	0
+#define L_UP 	1
+#define L_DOWN 	2
 
-extern volatile T_UBYTE rub_FlagWait5seg;
+#define PB_UP		SIU.GPDI[64].B.PDI
+#define PB_DOWN 	SIU.GPDI[66].B.PDI
+#define PB_AnPi 	SIU.GPDI[67].B.PDI
 
+#define Led_UP		SIU.GPDO[11].B.PDO
+#define Led_DOWN	SIU.GPDO[10].B.PDO
+
+#define First_Led	SIU.GPDO[0].B.PDO
+
+#define ON 0
+#define OFF 1
 /*============================================================================*/
-void Task_0(void){
-	
-//	SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
-	Val_PushB();
-	Time5segAnpi();
-}
-/*============================================================================*/
-void Task_1(void){
+T_SBYTE Func_UP(T_SBYTE lsb_index);		
+T_SBYTE Func_DOWN(T_SBYTE lsb_index);	
+void Func_IDLE(void);
 
-//	SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
-	
-	Func_Dir();
-	Func_LEDsUpDown();
-	
-	if(!rub_FlagWait5seg){
-		StateMachine();
-	}
-	else{
-		/****/
-	}
-}
+void StateMachine(void);
+
+void Val_PushB(void);
+void Val_PB_UP(void);
+void Val_PB_DOWN(void);
+void Val_PB_AnPi(void);
+void InvalidButtonPress(void);
+void NoButtonPress(void);
+
+void Time5segAnpi(void);
+void Func_Dir(void);
+void Reset_All_Flags(void);
+void Reset_Dir_Flags(void);
+void Reset_VarBarLeds(void);
+
+void Func_LEDsUpDown(void);
+
+#endif /* APP_H_ */
