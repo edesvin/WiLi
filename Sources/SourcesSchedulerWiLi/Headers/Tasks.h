@@ -70,10 +70,20 @@ T_SBYTE Func_UP(T_SBYTE lsb_index);
 T_SBYTE Func_DOWN(T_SBYTE lsb_index);
 void Func_IDLE(void);
 
+void StateMachine(void);
+
 void Val_PushB(void);
+void Val_PB_UP(void);
+void Val_PB_DOWN(void);
+void Val_PB_AnPi(void);
+void InvalidButtonPress(void);
+void NoButtonPress(void);
+
+void Time5segAnpi(void);
 void Func_Dir(void);
 void Reset_All_Flags(void);
 void Reset_Dir_Flags(void);
+void Reset_VarBarLeds(void);
 
 void Func_LEDsUpDown(void);
 

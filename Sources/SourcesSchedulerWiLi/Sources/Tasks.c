@@ -70,44 +70,20 @@ extern volatile T_UBYTE rub_FlagFinalPositionDown = 0;
 /*============================================================================*/
 void Task_0(void){
 	
-	SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
+//	SIU.GPDO[68].B.PDO = !SIU.GPDO[68].B.PDO;
 	Val_PushB();
-	if(ruw_CounterWait5seg > 0){
-			ruw_CounterWait5seg--;
-			rub_FlagWait5seg = 1;
-			rub_FlagValAnPi = 0;
-			Reset_All_Flags();
-			rsb_CountIndex = 0;
-			rub_FlagL_DOWN = 0;
-			rub_FlagL_UP = 0;
-		}
-	else{
-		rub_FlagWait5seg = 0;
-	}
+	Time5segAnpi();
 }
 /*============================================================================*/
 void Task_1(void){
 
-	SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
+//	SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
+	
 	Func_Dir();
 	Func_LEDsUpDown();
 	
 	if(!rub_FlagWait5seg){
-		switch (rub_Direction) {
-			
-			case L_UP:
-				rsb_CountIndex = Func_UP(rsb_CountIndex);
-				break;
-			
-			case L_DOWN:
-				rsb_CountIndex = Func_DOWN(rsb_CountIndex);				
-				break;
-				
-			default:
-				Func_IDLE();
-				break;
-				
-		}
+		StateMachine();
 	}
 	else{
 		/****/
@@ -156,8 +132,8 @@ T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 }
 /*============================================================================*/
 void Func_IDLE(void){
-	//Led_UP = OFF;
-	//Led_DOWN = OFF;	
+	Led_UP = OFF;
+	Led_DOWN = OFF;	
 }
 /*============================================================================*/
 void Func_Dir(void){
@@ -185,78 +161,19 @@ void Func_Dir(void){
 void Val_PushB(void){
 	
 	if(PB_UP && !PB_DOWN  && !rub_FlagValAnPi){
-		ruw_CountUp++;
-		rub_FValAutDown = 0;
-		
-		if(ruw_CountUp >= 10 && ruw_CountUp < 500){
-			Reset_Dir_Flags();
-			rub_FlagValUpAut = 1;
-		}
-		
-		else if(ruw_CountUp >= 500 && !rub_FValAutUP){
-			Reset_Dir_Flags();
-			rub_FlagValUpMan = 1;
-			if(ruw_CountUp > 4000) ruw_CountUp = 4000;
-		}
-		
-		else{
-			/**/
-		}
+		Val_PB_UP();
 	}
-	
 	else if(!PB_UP && PB_DOWN ){
-		ruw_CountDown++;
-		rub_FValAutUP = 0;
-		
-		if(ruw_CountDown >= 10 && ruw_CountDown < 500){
-			Reset_Dir_Flags();
-			rub_FlagValDownAut = 1;
-		}
-		
-		else if(ruw_CountDown >= 500 && !rub_FValAutDown){
-			Reset_Dir_Flags();
-			rub_FlagValDownMan = 1;
-			if(ruw_CountDown > 4000) ruw_CountDown = 4000;
-		}
-		
-		else{
-			/**/
-		}
+		Val_PB_DOWN();
 	}
-	
 	else if(PB_UP && PB_DOWN && !rub_FlagValAnPi){
-		Reset_All_Flags();
-		ruw_CountDown = 500;
-		ruw_CountUp = 500;
+		InvalidButtonPress();
 	}
-	
-	else{
-		
-		rub_FlagValUpMan = 0;
-		rub_FlagValDownMan = 0;
-		ruw_CountUp = 0;
-		ruw_CountDown = 0;
-		
-		if(rub_FlagValUpAut){
-			rub_FValAutUP = 1;
-		}
-		
-		if(rub_FlagValDownAut){ 
-			rub_FValAutDown = 1;			
-		}
+	else{	
+		NoButtonPress();
 	}
 	if(!PB_DOWN && PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagFinalPositionUP){
-		ruw_CountAnPi++;
-		rub_FValAutUP = 0;
-		
-		if(ruw_CountAnPi >= 10){
-			
-			rub_FlagValAnPi = 1;
-			ruw_CountAnPi = 0;
-			Reset_Dir_Flags();
-			rub_FlagValDownAut = 1;
-			rub_FValAutDown = 1;
-		}
+		Val_PB_AnPi();
 	}
 }
 /*============================================================================*/
@@ -275,7 +192,7 @@ void Reset_Dir_Flags(void){
 	rub_FlagValUpAut = 0;
 	rub_FlagValUpMan = 0;
 }
-
+/*============================================================================*/
 void Func_LEDsUpDown(void){
 	if((rub_FlagValUpAut || rub_FlagValUpMan) && rsb_CountIndex <= 9 && !rub_FlagFinalPositionUP){
 		Led_UP = ON;
@@ -289,4 +206,114 @@ void Func_LEDsUpDown(void){
 		Led_UP = OFF;
 		Led_DOWN = OFF;
 	}
+}
+/*============================================================================*/
+void Val_PB_UP(void){
+	ruw_CountUp++;
+	rub_FValAutDown = 0;
+	
+	if(ruw_CountUp >= 10 && ruw_CountUp < 500){
+		Reset_Dir_Flags();
+		rub_FlagValUpAut = 1;
+	}
+	
+	else if(ruw_CountUp >= 500 && !rub_FValAutUP){
+		Reset_Dir_Flags();
+		rub_FlagValUpMan = 1;
+		if(ruw_CountUp > 4000) ruw_CountUp = 4000;
+	}
+	
+	else{
+		/**/
+	}
+}
+/*============================================================================*/
+void Val_PB_DOWN(void){
+	ruw_CountDown++;
+	rub_FValAutUP = 0;
+	
+	if(ruw_CountDown >= 10 && ruw_CountDown < 500){
+		Reset_Dir_Flags();
+		rub_FlagValDownAut = 1;
+	}
+	
+	else if(ruw_CountDown >= 500 && !rub_FValAutDown){
+		Reset_Dir_Flags();
+		rub_FlagValDownMan = 1;
+		if(ruw_CountDown > 4000) ruw_CountDown = 4000;
+	}
+	
+	else{
+		/**/
+	}
+}
+/*============================================================================*/
+void Val_PB_AnPi(void){
+	ruw_CountAnPi++;
+	rub_FValAutUP = 0;
+	
+	if(ruw_CountAnPi >= 10){
+		
+		rub_FlagValAnPi = 1;
+		ruw_CountAnPi = 0;
+		Reset_Dir_Flags();
+		rub_FlagValDownAut = 1;
+		rub_FValAutDown = 1;
+	}
+}
+/*============================================================================*/
+void InvalidButtonPress(void){
+	Reset_All_Flags();
+	ruw_CountDown = 500;
+	ruw_CountUp = 500;
+}
+/*============================================================================*/
+void NoButtonPress(void){
+	rub_FlagValUpMan = 0;
+	rub_FlagValDownMan = 0;
+	ruw_CountUp = 0;
+	ruw_CountDown = 0;
+	if(rub_FlagValUpAut){
+		rub_FValAutUP = 1;
+	}
+	if(rub_FlagValDownAut){ 
+		rub_FValAutDown = 1;			
+	}
+}
+/*============================================================================*/
+void StateMachine(void){
+	switch (rub_Direction) {
+		
+		case L_UP:
+			rsb_CountIndex = Func_UP(rsb_CountIndex);
+			break;
+		
+		case L_DOWN:
+			rsb_CountIndex = Func_DOWN(rsb_CountIndex);				
+			break;
+			
+		default:
+			Func_IDLE();
+			break;
+			
+	}
+}
+/*============================================================================*/
+void Reset_VarBarLeds(void){
+	rsb_CountIndex = 0;
+	rub_FlagL_DOWN = 0;
+	rub_FlagL_UP = 0;	
+}
+/*============================================================================*/
+void Time5segAnpi(void){
+	if(ruw_CounterWait5seg > 0){
+		rub_FlagWait5seg = 1;	
+		ruw_CounterWait5seg--;
+		rub_FlagValAnPi = 0;
+		Reset_All_Flags();
+		Reset_VarBarLeds();
+		}
+	else{
+		rub_FlagWait5seg = 0;
+	}	
 }
