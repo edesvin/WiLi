@@ -75,5 +75,6 @@ void Func_Dir(void);
 void Reset_All_Flags(void);
 void Reset_Dir_Flags(void);
 
+void Func_LEDsUpDown(void);
 
 #endif /* TASKS_H_ */

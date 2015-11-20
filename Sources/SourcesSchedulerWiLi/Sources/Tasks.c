@@ -46,7 +46,6 @@
 extern volatile T_UBYTE rub_Direction = 0;
 extern T_SBYTE rsb_CountIndex = 0;
 /*============================================================================*/
-extern T_UBYTE rub_CountIndice;
 
 extern volatile T_UBYTE rub_FlagValUpAut = 0;
 extern volatile T_UBYTE rub_FlagValUpMan = 0;
@@ -65,6 +64,9 @@ extern volatile T_UWORD ruw_CountAnPi = 0;
 
 extern volatile T_UBYTE rub_FlagL_UP = 0;
 extern volatile T_UBYTE rub_FlagL_DOWN = 0;
+
+extern volatile T_UBYTE rub_FlagFinalPositionUP = 0;
+extern volatile T_UBYTE rub_FlagFinalPositionDown = 0;
 /*============================================================================*/
 void Task_0(void){
 	
@@ -88,17 +90,8 @@ void Task_1(void){
 
 	SIU.GPDO[69].B.PDO = !SIU.GPDO[69].B.PDO;
 	Func_Dir();
+	Func_LEDsUpDown();
 	
-	/*if(ruw_CounterWait5seg > 0){
-		ruw_CounterWait5seg--;
-	}
-
-	else{
-		if(rub_FlagWait5seg){
-			rub_FlagWait5seg = 0;			
-			Reset_All_Flags();
-			Func_Dir();
-		}*/
 	if(!rub_FlagWait5seg){
 		switch (rub_Direction) {
 			
@@ -122,35 +115,35 @@ void Task_1(void){
 }
 /*============================================================================*/
 T_SBYTE Func_UP(T_SBYTE lsb_index){
+	rub_FlagFinalPositionDown = 0;
 	rub_FlagL_UP = 1;
 	if(rub_FlagL_DOWN){
 		rub_FlagL_DOWN = 0;
 		lsb_index++;
 	}
 	SIU.GPDO[lsb_index].B.PDO = 1;
-	Led_UP = ON;
-	Led_DOWN = OFF;
 	lsb_index++;
 	
-	if(lsb_index >= 10 ){
+	if( lsb_index >= 10 ){
 		Reset_All_Flags();
 		lsb_index = 9;
 		rub_FlagL_UP = 0;
 		rub_FlagL_DOWN = 0;
+		rub_FlagFinalPositionUP = 1;
 	}
 	return lsb_index;
 }
 /*============================================================================*/
 T_SBYTE Func_DOWN(T_SBYTE lsb_index){
+	rub_FlagFinalPositionUP = 0;
 	rub_FlagL_DOWN = 1;
 	if(rub_FlagL_UP){
 		rub_FlagL_UP = 0;
 		lsb_index--;
 	}
 	SIU.GPDO[lsb_index].B.PDO = 0;
-	Led_UP = OFF;
-	Led_DOWN = ON;
 	if(lsb_index <= 0 ){
+		rub_FlagFinalPositionDown = 1;
 		Reset_All_Flags();
 		lsb_index = 0;
 		rub_FlagL_UP = 0;
@@ -163,8 +156,8 @@ T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 }
 /*============================================================================*/
 void Func_IDLE(void){
-	Led_UP = OFF;
-	Led_DOWN = OFF;	
+	//Led_UP = OFF;
+	//Led_DOWN = OFF;	
 }
 /*============================================================================*/
 void Func_Dir(void){
@@ -179,19 +172,13 @@ void Func_Dir(void){
 			rub_FlagValAnPi = 0;
 			First_Led = 0;
 			ruw_CounterWait5seg = 5000;
-			Led_UP = OFF;
-			Led_DOWN = OFF;
 		}
 	}
 	else if(!rub_FlagValUpAut && !rub_FlagValUpMan && !rub_FlagValDownAut && !rub_FlagValDownMan){
 		rub_Direction = L_IDLE;
-		Led_UP = OFF;
-		Led_DOWN = OFF;
 	}
 	else{
 		rub_Direction = L_IDLE;
-		Led_UP = OFF;
-		Led_DOWN = OFF;
 	}
 }
 /*============================================================================*/
@@ -237,20 +224,6 @@ void Val_PushB(void){
 		}
 	}
 	
-	else if(!PB_DOWN && PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) ){
-		ruw_CountAnPi++;
-		rub_FValAutUP = 0;
-		
-		if(ruw_CountAnPi >= 10){
-			
-			rub_FlagValAnPi = 1;
-			ruw_CountAnPi = 0;
-			Reset_Dir_Flags();
-			rub_FlagValDownAut = 1;
-			rub_FValAutDown = 1;
-		}
-	}
-	
 	else if(PB_UP && PB_DOWN && !rub_FlagValAnPi){
 		Reset_All_Flags();
 		ruw_CountDown = 500;
@@ -272,6 +245,19 @@ void Val_PushB(void){
 			rub_FValAutDown = 1;			
 		}
 	}
+	if(!PB_DOWN && PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagFinalPositionUP){
+		ruw_CountAnPi++;
+		rub_FValAutUP = 0;
+		
+		if(ruw_CountAnPi >= 10){
+			
+			rub_FlagValAnPi = 1;
+			ruw_CountAnPi = 0;
+			Reset_Dir_Flags();
+			rub_FlagValDownAut = 1;
+			rub_FValAutDown = 1;
+		}
+	}
 }
 /*============================================================================*/
 void Reset_All_Flags(void){
@@ -288,4 +274,19 @@ void Reset_Dir_Flags(void){
 	rub_FlagValDownMan = 0;
 	rub_FlagValUpAut = 0;
 	rub_FlagValUpMan = 0;
+}
+
+void Func_LEDsUpDown(void){
+	if((rub_FlagValUpAut || rub_FlagValUpMan) && rsb_CountIndex <= 9 && !rub_FlagFinalPositionUP){
+		Led_UP = ON;
+		Led_DOWN = OFF;
+	}
+	else if((rub_FlagValDownAut || rub_FlagValDownMan) && rsb_CountIndex >= 0 && !rub_FlagFinalPositionDown){
+		Led_UP = OFF;
+		Led_DOWN = ON;
+	}
+	else{
+		Led_UP = OFF;
+		Led_DOWN = OFF;
+	}
 }
