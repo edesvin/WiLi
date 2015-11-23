@@ -9,7 +9,7 @@
 /*============================================================================*/
 /*!
  * $Source: Kernel.c $
- * $Revision: 1.0 $
+ * $Revision: 1.1 $
  * $Author:	Adrian Zacarias Siete $
  *		Edgar Escayola Vinagre $
  * $Date: 17-11-2015 $
