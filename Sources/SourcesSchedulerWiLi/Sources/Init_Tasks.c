@@ -57,8 +57,12 @@ const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 		/*	{	Function Pointer	,	Period	,		Offset	}	*/	
 
 };
-/*============================================================================*/
-
+/*==============================================================================
+* Function: Global_Init
+*
+* Description: scheduler Initialization
+*
+==============================================================================*/
 void Global_Init(void){
 
 	T_UWORD luw_i;

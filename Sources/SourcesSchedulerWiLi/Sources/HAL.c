@@ -45,7 +45,13 @@
 /* Includes */
 /*============================================================================*/
 #include "HAL.h"
-/*============================================================================*/
+/*==============================================================================
+* Function: initModesAndClock
+*
+* Description:	Peripheral RUN Mode Configuration
+* 	Activate the clock Configuration
+*
+==============================================================================*/
 void initModesAndClock(void){
 
 	ME.RUN[0].R = 0x001F0074;
@@ -54,30 +60,50 @@ void initModesAndClock(void){
 	ME.MCTL.R = 0x4000A50F; 
 
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Init_ISR
+*
+* Description: Interrupts Configuration for timer PIT.
+*
+==============================================================================*/
 void Init_ISR(void){
 	
-	INTC_InstallINTCInterruptHandler(ISR_Tick,59,1);
+	INTC_InstallINTCInterruptHandler(ISR_Tick,59,1);	//Software Interrupt
 	INTC.CPR.R = 0;
 
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Init_PIT
+*
+* Description: Initialization of timer PIT.
+*
+==============================================================================*/
 void Init_PIT(void){
 	
-	PIT.PITMCR.B.MDIS = 0;			//Enable Clock for PIT
-	PIT.PITMCR.B.FRZ = 1;			
+	PIT.PITMCR.B.MDIS = 0;			//Clock for PIT timers is enabled.
+	PIT.PITMCR.B.FRZ = 1;			//Timers are stopped in debug mode.
 	
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Init_PIT_CH0
+*
+* Description: configuracion del canal 0 para el timer PIT.
+*
+==============================================================================*/
 void Init_PIT_CH0(T_ULONG LDVALOR_0){
 
-	PIT.CH[0].LDVAL.R = LDVALOR_0;	
-	PIT.CH[0].TCTRL.B.TEN = 1;		
-	PIT.CH[0].TCTRL.B.TIE = 1;		
-	PIT.CH[0].TFLG.B.TIF = 1;
+	PIT.CH[0].LDVAL.R = LDVALOR_0;	//Time Start Value.
+	PIT.CH[0].TCTRL.B.TEN = 1;		//Timer will be active.
+	PIT.CH[0].TCTRL.B.TIE = 1;		//Interrupt will be requested whenever TIF is set.
+	PIT.CH[0].TFLG.B.TIF = 1;		//Time Interrupt Flag.
 	
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: init_GPIO
+*
+* Description: SIU Initialization  
+*
+==============================================================================*/
 void init_GPIO(void){
 	
 	T_UWORD luw_i;
@@ -92,7 +118,12 @@ void init_GPIO(void){
 	for(luw_i = 64; luw_i <=67; luw_i++) SIU.PCR[luw_i].R = 0x0100;
 
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: All_Init
+*
+* Description: inicializacion de todos los perifericos
+*
+==============================================================================*/
 void All_Init(void){
 	
 	initModesAndClock();

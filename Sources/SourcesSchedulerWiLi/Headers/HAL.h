@@ -51,7 +51,7 @@
 #include "Kernel.h"
 /* Defines */
 /*============================================================================*/
-#define ValTMR_0 		0x0000F9FF
+#define ValTMR_0 		0x0000F9FF		//Time Start Value
 /* Exported functions prototypes */
 /*============================================================================*/
 void initModesAndClock(void);

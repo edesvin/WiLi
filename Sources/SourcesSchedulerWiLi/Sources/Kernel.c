@@ -53,8 +53,13 @@
 extern const S_STAT cas_STAT[E_TSK_N_OF];
 volatile T_UBYTE rub_Tick_Flag = 0;
 volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
-/*============================================================================*/
-
+/*==============================================================================
+* Function: ISR_Tick
+* 
+* Description: Interrupción del clock tick para disparar las tareas 
+* Esta interrupcion ocurre periodicamente cada 1ms mediante el timer PIT
+*
+==============================================================================*/
 void ISR_Tick(void){
 
 	rub_Tick_Flag = 1;
