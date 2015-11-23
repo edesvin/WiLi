@@ -11,7 +11,7 @@
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
-/** \file
+/** \HAL.c
 		This file contains the implementation of the HAL.
 		
 		It contains the implementation of clocks, timers, GPIOs and interrupts
@@ -48,8 +48,8 @@
 /*==============================================================================
 * Function: initModesAndClock
 *
-* Description:	Peripheral RUN Mode Configuration
-* 	Activate the clock Configuration
+* Description:	The Peripheral RUN Mode Configuration is done.
+* 				It also activates the clock configuration.
 *
 ==============================================================================*/
 void initModesAndClock(void){
@@ -75,8 +75,7 @@ void Init_ISR(void){
 /*==============================================================================
 * Function: Init_PIT
 *
-* Description: Initialization of timer PIT.
-*
+* Description: Initialization of the PIT timer.
 ==============================================================================*/
 void Init_PIT(void){
 	
@@ -87,7 +86,7 @@ void Init_PIT(void){
 /*==============================================================================
 * Function: Init_PIT_CH0
 *
-* Description: configuracion del canal 0 para el timer PIT.
+* Description: This function configures the channel 0 of the PIT timer.
 *
 ==============================================================================*/
 void Init_PIT_CH0(T_ULONG LDVALOR_0){
@@ -101,7 +100,7 @@ void Init_PIT_CH0(T_ULONG LDVALOR_0){
 /*==============================================================================
 * Function: init_GPIO
 *
-* Description: SIU Initialization  
+* Description: This function configures the GPIO and initializes the outputs.
 *
 ==============================================================================*/
 void init_GPIO(void){
@@ -121,7 +120,7 @@ void init_GPIO(void){
 /*==============================================================================
 * Function: All_Init
 *
-* Description: inicializacion de todos los perifericos
+* Description: This function initializes all the peripherals.
 *
 ==============================================================================*/
 void All_Init(void){

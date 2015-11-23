@@ -11,7 +11,8 @@
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
-/** \file
+/** \Init_Tasks.c
+
 		This file contains the global initializations.
 		
 		It contains the array that has the description of the tasks: 
@@ -60,7 +61,7 @@ const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 /*==============================================================================
 * Function: Global_Init
 *
-* Description: scheduler Initialization
+* Description: This function initializes the scheduler.
 *
 ==============================================================================*/
 void Global_Init(void){

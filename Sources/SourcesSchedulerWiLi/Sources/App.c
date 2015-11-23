@@ -11,7 +11,7 @@
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
-/** \file
+/** \App.c
     This file contains all the functions implemented in the tasks used by the 
     scheduler.
 */
@@ -68,7 +68,12 @@ extern volatile T_UBYTE rub_FlagL_DOWN = 0;
 
 extern volatile T_UBYTE rub_FlagFinalPositionUP = 0;
 extern volatile T_UBYTE rub_FlagFinalPositionDown = 0;
-/*============================================================================*/
+/*==============================================================================
+* Function: Func_UP
+*
+* Description: Function which generates the UP movement.
+*
+==============================================================================*/
 T_SBYTE Func_UP(T_SBYTE lsb_index){
 	rub_FlagFinalPositionDown = 0;
 	rub_FlagL_UP = 1;
@@ -88,7 +93,12 @@ T_SBYTE Func_UP(T_SBYTE lsb_index){
 	}
 	return lsb_index;
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Func_DOWN
+*
+* Description: Function which generates the DOWN movement.
+*
+==============================================================================*/
 T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 	rub_FlagFinalPositionUP = 0;
 	rub_FlagL_DOWN = 1;
@@ -109,12 +119,23 @@ T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 	}
 	return lsb_index;
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Func_IDLE
+*
+* Description: This function stops any signal showing movement.
+*
+==============================================================================*/
 void Func_IDLE(void){
 	Led_UP = OFF;
 	Led_DOWN = OFF;	
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Func_Dir
+*
+* Description: Function which sets the direction of the movement according to 
+* the direction flags.
+*
+==============================================================================*/
 void Func_Dir(void){
 	
 	if(rub_FlagValUpAut || rub_FlagValUpMan){
@@ -136,7 +157,15 @@ void Func_Dir(void){
 		rub_Direction = L_IDLE;
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Val_PushB
+*
+* Description: This function validates the status of each push button. It is 
+* called by a task that runs every millisecond. It checks the status of the 
+* push buttons in order to consider it a valid press, and then it could run 
+* the functions that will change the status of the application. 
+*
+==============================================================================*/
 void Val_PushB(void){
 	
 	if(PB_UP && !PB_DOWN  && !rub_FlagValAnPi){
@@ -155,23 +184,38 @@ void Val_PushB(void){
 		Val_PB_AnPi();
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Reset_All_Flags
+*
+* Description: Function that resets all the flags that have to do with movement.
+*
+==============================================================================*/
 void Reset_All_Flags(void){
-	rub_FlagValDownAut = 0;
-	rub_FlagValDownMan = 0;
-	rub_FlagValUpAut = 0;
-	rub_FlagValUpMan = 0;
+
+	Reset_Dir_Flags();
 	rub_FValAutDown = 0;
 	rub_FValAutUP = 0;
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Reset_Dir_Flags
+*
+* Description: Function that resets all the flags that have to do with the 
+* direction movement.
+*
+==============================================================================*/
 void Reset_Dir_Flags(void){
 	rub_FlagValDownAut = 0;
 	rub_FlagValDownMan = 0;
 	rub_FlagValUpAut = 0;
 	rub_FlagValUpMan = 0;
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Func_LEDsUpDown
+*
+* Description: Function that sets the LED indicators that show the direction 
+* of the movement.
+*
+==============================================================================*/
 void Func_LEDsUpDown(void){
 	if((rub_FlagValUpAut || rub_FlagValUpMan) && rsb_CountIndex <= 9 && !rub_FlagFinalPositionUP){
 		Led_UP = ON;
@@ -186,7 +230,13 @@ void Func_LEDsUpDown(void){
 		Led_DOWN = OFF;
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Val_PB_UP
+*
+* Description: Function that sets and evaluates de counters in order to know 
+* for how long the push button UP has been pressed.
+*
+==============================================================================*/
 void Val_PB_UP(void){
 	ruw_CountUp++;
 	rub_FValAutDown = 0;
@@ -206,7 +256,13 @@ void Val_PB_UP(void){
 		/**/
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Val_PB_DOWN
+*
+* Description: Function that sets and evaluates de counters in order to know 
+* for how long the push button DOWN has been pressed.
+*
+==============================================================================*/
 void Val_PB_DOWN(void){
 	ruw_CountDown++;
 	rub_FValAutUP = 0;
@@ -226,7 +282,13 @@ void Val_PB_DOWN(void){
 		/**/
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Val_PB_AnPi
+*
+* Description: Function that sets and evaluates de counters in order to know
+* for how long the push button of the signal Anti Pinch has been pressed.
+*
+==============================================================================*/
 void Val_PB_AnPi(void){
 	ruw_CountAnPi++;
 	rub_FValAutUP = 0;
@@ -240,13 +302,25 @@ void Val_PB_AnPi(void){
 		rub_FValAutDown = 1;
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: InvalidButtonPress
+*
+* Description: This function clears the flags and sets the values necessary to
+* declare an invalid button press.
+*
+==============================================================================*/
 void InvalidButtonPress(void){
 	Reset_All_Flags();
 	ruw_CountDown = 500;
 	ruw_CountUp = 500;
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: NoButtonPress
+*
+* Description: This function sets the flags to indicate that a button is not
+* being pressed.
+*
+==============================================================================*/
 void NoButtonPress(void){
 	rub_FlagValUpMan = 0;
 	rub_FlagValDownMan = 0;
@@ -259,7 +333,13 @@ void NoButtonPress(void){
 		rub_FValAutDown = 1;			
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: StateMachine
+*
+* Description: Function that holds the main state machine of the application. 
+* It chooses in which state it should be.
+*
+==============================================================================*/
 void StateMachine(void){
 	switch (rub_Direction) {
 		
@@ -277,13 +357,26 @@ void StateMachine(void){
 			
 	}
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Reset_VarBarLeds
+*
+* Description: Function that clears flags and counters generated by the push 
+* buttons.
+*
+==============================================================================*/
 void Reset_VarBarLeds(void){
 	rsb_CountIndex = 0;
 	rub_FlagL_DOWN = 0;
 	rub_FlagL_UP = 0;	
 }
-/*============================================================================*/
+/*==============================================================================
+* Function: Time5segAnpi
+*
+* Description: Function that decrements the value of the variable used to 
+* represent the 5 seconds delay. It also sets the flags so that the code will
+* freeze after a Pinch.
+*
+==============================================================================*/
 void Time5segAnpi(void){
 	if(ruw_CounterWait5seg > 0){
 		rub_FlagWait5seg = 1;	
