@@ -54,7 +54,7 @@
 
 #define PB_UP		SIU.GPDI[64].B.PDI
 #define PB_DOWN 	SIU.GPDI[66].B.PDI
-#define PB_AnPi 	SIU.GPDI[67].B.PDI
+#define PB_AN_PI 	SIU.GPDI[67].B.PDI
 
 #define LED_UP		SIU.GPDO[11].B.PDO
 #define LED_DOWN	SIU.GPDO[10].B.PDO

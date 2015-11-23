@@ -181,7 +181,7 @@ void Val_PushB(void){
 	else{	
 		NoButtonPress();
 	}
-	if(!PB_DOWN && PB_AnPi && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagFinalPositionUP){
+	if(!PB_DOWN && PB_AN_PI && (rub_FlagValUpAut || rub_FlagValUpMan) && !rub_FlagFinalPositionUP){
 		Val_PB_AnPi();
 	}
 }
