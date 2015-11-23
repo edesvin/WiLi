@@ -7,7 +7,7 @@
  * $Source: Tasks.h $
  * $Revision: 1.5 $
  * $Author: 	Adrián Zacarías Siete $
- *		Edgar Escayola Vinagre $
+ *				Edgar Escayola Vinagre $
  * $Date: 17-11-2015 $
  */
 /*============================================================================*/
@@ -47,22 +47,6 @@
 #include "stdtypedef.h"
 #include "App.h"
 /* Exported functions prototypes */
-/*============================================================================*/
-#define L_IDLE 	0
-#define L_UP 	1
-#define L_DOWN 	2
-
-#define PB_UP		SIU.GPDI[64].B.PDI
-#define PB_DOWN 	SIU.GPDI[66].B.PDI
-#define PB_AnPi 	SIU.GPDI[67].B.PDI
-
-#define Led_UP		SIU.GPDO[11].B.PDO
-#define Led_DOWN	SIU.GPDO[10].B.PDO
-
-#define First_Led	SIU.GPDO[0].B.PDO
-
-#define ON 0
-#define OFF 1
 /*============================================================================*/
 extern void Task_0(void);
 extern void Task_1(void);

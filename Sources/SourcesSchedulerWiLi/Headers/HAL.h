@@ -7,7 +7,7 @@
  * $Source: HAL.h $
  * $Revision: 1.0 $
  * $Author: 	Adrián Zacarías Siete $
- *		Edgar Escayola Vinagre %
+ *				Edgar Escayola Vinagre %
  * $Date: 17-11-2015 $
  */
 /*============================================================================*/
@@ -52,7 +52,7 @@
 #include "Kernel.h"
 /* Defines */
 /*============================================================================*/
-#define ValTMR_0 		0x0000F9FF		//Time Start Value
+#define VAL_TMR_0 		0x0000F9FF		//Time Start Value
 /* Exported functions prototypes */
 /*============================================================================*/
 void initModesAndClock(void);

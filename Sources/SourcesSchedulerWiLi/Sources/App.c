@@ -7,7 +7,7 @@
  * $Source: App.c $
  * $Revision: 1.1 $
  * $Author: 	Adrián Zacarías Siete $
-		Edgar Escayola Vinagre $
+				Edgar Escayola Vinagre $
  * $Date: 20-11-2015 $
  */
 /*============================================================================*/
@@ -127,8 +127,8 @@ T_SBYTE Func_DOWN(T_SBYTE lsb_index){
 *
 ==============================================================================*/
 void Func_IDLE(void){
-	Led_UP = OFF;
-	Led_DOWN = OFF;	
+	LED_UP = OFF;
+	LED_DOWN = OFF;	
 }
 /*==============================================================================
 * Function: Func_Dir
@@ -147,8 +147,8 @@ void Func_Dir(void){
 		if(rub_FlagValAnPi && rsb_CountIndex == 0){
 			rub_Direction = L_IDLE;
 			rub_FlagValAnPi = 0;
-			First_Led = 0;
-			ruw_CounterWait5seg = 5000;
+			FIRST_LED = 0;
+			ruw_CounterWait5seg = FIVE_SECOND;
 		}
 	}
 	else if(!rub_FlagValUpAut && !rub_FlagValUpMan && !rub_FlagValDownAut && !rub_FlagValDownMan){
@@ -219,16 +219,16 @@ void Reset_Dir_Flags(void){
 ==============================================================================*/
 void Func_LEDsUpDown(void){
 	if((rub_FlagValUpAut || rub_FlagValUpMan) && rsb_CountIndex <= 9 && !rub_FlagFinalPositionUP){
-		Led_UP = ON;
-		Led_DOWN = OFF;
+		LED_UP = ON;
+		LED_DOWN = OFF;
 	}
 	else if((rub_FlagValDownAut || rub_FlagValDownMan) && rsb_CountIndex >= 0 && !rub_FlagFinalPositionDown){
-		Led_UP = OFF;
-		Led_DOWN = ON;
+		LED_UP = OFF;
+		LED_DOWN = ON;
 	}
 	else{
-		Led_UP = OFF;
-		Led_DOWN = OFF;
+		LED_UP = OFF;
+		LED_DOWN = OFF;
 	}
 }
 /*==============================================================================
@@ -242,15 +242,15 @@ void Val_PB_UP(void){
 	ruw_CountUp++;
 	rub_FValAutDown = 0;
 	
-	if(ruw_CountUp >= 10 && ruw_CountUp < 500){
+	if(ruw_CountUp >= VALID_VALUE && ruw_CountUp < MANUAL_VALUE){
 		Reset_Dir_Flags();
 		rub_FlagValUpAut = 1;
 	}
 	
-	else if(ruw_CountUp >= 500 && !rub_FValAutUP){
+	else if(ruw_CountUp >= MANUAL_VALUE && !rub_FValAutUP){
 		Reset_Dir_Flags();
 		rub_FlagValUpMan = 1;
-		if(ruw_CountUp > 4000) ruw_CountUp = 4000;
+		if(ruw_CountUp > VAL_MAX_COUNTER_PUSH) ruw_CountUp = VAL_MAX_COUNTER_PUSH;
 	}
 	
 	else{
@@ -268,15 +268,15 @@ void Val_PB_DOWN(void){
 	ruw_CountDown++;
 	rub_FValAutUP = 0;
 	
-	if(ruw_CountDown >= 10 && ruw_CountDown < 500){
+	if(ruw_CountDown >= VALID_VALUE && ruw_CountDown < MANUAL_VALUE){
 		Reset_Dir_Flags();
 		rub_FlagValDownAut = 1;
 	}
 	
-	else if(ruw_CountDown >= 500 && !rub_FValAutDown){
+	else if(ruw_CountDown >= MANUAL_VALUE && !rub_FValAutDown){
 		Reset_Dir_Flags();
 		rub_FlagValDownMan = 1;
-		if(ruw_CountDown > 4000) ruw_CountDown = 4000;
+		if(ruw_CountDown > VAL_MAX_COUNTER_PUSH) ruw_CountDown = VAL_MAX_COUNTER_PUSH;
 	}
 	
 	else{
@@ -294,7 +294,7 @@ void Val_PB_AnPi(void){
 	ruw_CountAnPi++;
 	rub_FValAutUP = 0;
 	
-	if(ruw_CountAnPi >= 10){
+	if(ruw_CountAnPi >= VALID_VALUE){
 		
 		rub_FlagValAnPi = 1;
 		ruw_CountAnPi = 0;
@@ -312,8 +312,8 @@ void Val_PB_AnPi(void){
 ==============================================================================*/
 void InvalidButtonPress(void){
 	Reset_All_Flags();
-	ruw_CountDown = 500;
-	ruw_CountUp = 500;
+	ruw_CountDown = MANUAL_VALUE;
+	ruw_CountUp = MANUAL_VALUE;
 }
 /*==============================================================================
 * Function: NoButtonPress

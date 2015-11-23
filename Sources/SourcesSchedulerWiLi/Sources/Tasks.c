@@ -7,7 +7,7 @@
  * $Source: Tasks.c $
  * $Revision: 1.8 $
  * $Author: 	Adrián Zacarías Siete $
- *		Edgar Escayola Vinagre $
+ *				Edgar Escayola Vinagre $
  * $Date: 17-11-2015 $
  */
 /*============================================================================*/

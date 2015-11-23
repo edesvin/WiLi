@@ -7,7 +7,7 @@
  * $Source: App.h $
  * $Revision: 1.0 $
  * $Author: 	Adrián Zacarías Siete $
- *		Edgar Escayola Vinagre $
+ *				Edgar Escayola Vinagre $
  * $Date: 20-11-2015 $
  */
 /*============================================================================*/
@@ -56,13 +56,18 @@
 #define PB_DOWN 	SIU.GPDI[66].B.PDI
 #define PB_AnPi 	SIU.GPDI[67].B.PDI
 
-#define Led_UP		SIU.GPDO[11].B.PDO
-#define Led_DOWN	SIU.GPDO[10].B.PDO
+#define LED_UP		SIU.GPDO[11].B.PDO
+#define LED_DOWN	SIU.GPDO[10].B.PDO
 
-#define First_Led	SIU.GPDO[0].B.PDO
+#define FIRST_LED	SIU.GPDO[0].B.PDO
 
 #define ON 0
 #define OFF 1
+
+#define MANUAL_VALUE 500
+#define VALID_VALUE 10
+#define FIVE_SECOND 5000
+#define VAL_MAX_COUNTER_PUSH 4000
 /*============================================================================*/
 T_SBYTE Func_UP(T_SBYTE lsb_index);		
 T_SBYTE Func_DOWN(T_SBYTE lsb_index);	

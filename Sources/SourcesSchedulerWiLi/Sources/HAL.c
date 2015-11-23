@@ -7,7 +7,7 @@
  * $Source: HAL.c $
  * $Revision: 1.0 $
  * $Author: 	Adrián Zacarías Siete $
-		Edgar Escayola Vinagre $
+				Edgar Escayola Vinagre $
  * $Date: 17-11-2015 $
  */
 /*============================================================================*/
@@ -130,6 +130,6 @@ void All_Init(void){
 	Init_PIT();
 	Init_ISR();
 	init_GPIO();
-	Init_PIT_CH0(ValTMR_0);
+	Init_PIT_CH0(VAL_TMR_0);
 
 }

@@ -7,7 +7,7 @@
  * $Source: Kernel.h $
  * $Revision: 1.0 $
  * $Author:	Adrian Zacarias Siete $
- *		Edgar Escayola Vinagre $
+ *			Edgar Escayola Vinagre $
  * $Date: 17-11-2015 $
  */
 /*============================================================================*/
